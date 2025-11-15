@@ -1,173 +1,93 @@
-# 👁️ ClearSight
+# 🛡️ ClearSight
 
-Advanced email phishing detection system with comprehensive analysis and historical tracking.
+ClearSight is an advanced email phishing detection system built with a polyglot microservice architecture. It moves beyond passive scanning by using NLP to detect manipulative language and an active sandbox to safely investigate unknown links.
+
+---
 
 ## ✨ Features
 
-- **Email Analysis Engine** - Upload `.eml` files or paste email content
-- **Multi-layer Detection** - Analyzes headers, content, links, and attachments
-- **VirusTotal Integration** - Real-time threat intelligence for URLs, domains, and IPs
-- **Threat Scoring** - Returns threat score (0-100%) and risk level (Low/Medium/High)
-- **Background Processing** - Fast response with Celery + Redis
-- **Batch Processing** - Analyze multiple emails simultaneously (up to 10 files)
-- **📊 Historical Dashboard** - Track analysis history with interactive charts and statistics
-- **📈 Trend Analysis** - Visualize threat patterns over time
-- **📋 Data Export** - Export analysis results in CSV or JSON format
-- **🔍 Advanced Filtering** - Filter history by risk level, date range, and more
+* **Email Analysis Engine:** Upload `.eml` files or paste email content for a full analysis.
+* **Asynchronous Processing:** Uses **Celery** and **Redis** to run all analysis in the background, so the UI never freezes on large tasks.
+* **Multi-Layer Heuristics:** Analyzes email headers for **SPF/DKIM** failures, content for suspicious keywords, and attachments for dangerous file types.
+* **External Threat Intelligence:** Integrates with the **VirusTotal API** to check links, domains, and IPs against over 70 global security vendors.
+* **NLP Sentiment Analysis:** The system uses **TextBlob** to analyze the email's sentiment, scoring its **subjectivity** to detect manipulative language that keywords might miss.
+* **Active Link Sandboxing:** Our team's core contribution. A dedicated **Node.js microservice** uses **Puppeteer** (headless Chrome) to safely "click" unknown links in a secure, isolated container and return visual screenshots of the destination.
+* **Historical Dashboard:** A **React** frontend to track and review all past analysis results, complete with charts and filtering.
+* **Data Export:** Export analysis history in JSON or CSV format.
 
-## 📊 Historical Dashboard Features
+---
 
-The new Historical Analysis Dashboard provides comprehensive insights:
+## 🚀 Quick Start
 
-- **📈 Interactive Charts** - Line charts for trends, pie charts for risk distribution
-- **📋 Data Tables** - Paginated history with sorting and filtering
-- **📤 Export Options** - Download data in CSV or JSON format
-- **🔍 Advanced Filters** - Filter by risk level, date range, analysis type
-- **📊 Statistics Cards** - Quick overview of total analyses and risk distribution
-- **📅 Trend Analysis** - Visualize patterns over 7, 30, or 90-day periods
+### Prerequisites
+* [Git](https://git-scm.com/downloads)
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-## Quick Start
+### Running the Project
+1.  **Clone the repository:**
+    ```bash
+    git clone [Your GitHub Repository URL]
+    cd clearsight
+    ```
 
-```bash
-# Clone and start
-git clone https://github.com/your-username/phish-guard.git
-cd phish-guard
-cp env.template .env
+2.  **Configure Environment:**
+    Copy the environment template. This file is pre-configured for local Docker development.
+    ```bash
+    cp env.template .env
+    ```
+    Open the `.env` file and paste your VirusTotal API key:
+    ```
+    VIRUSTOTAL_API_KEY=your-64-character-key-here
+    ```
 
-# Configure VirusTotal API (optional but recommended)
-# Get your free API key from https://www.virustotal.com/gui/join-us
-# Add it to .env: VIRUSTOTAL_API_KEY=your-api-key-here
+3.  **Build and Run:**
+    This command will build all container images and start all services. The first build may take several minutes as it installs the OS, dependencies, and headless browser.
+    ```bash
+    docker-compose up --build
+    ```
 
-docker-compose up --build
-```
+4.  **Access the Application:**
+    Open your browser and navigate to `http://localhost:5000`.
 
-**Access:** 
-- **Main Dashboard:** http://localhost:5000 (Email analysis)
-- **Historical Dashboard:** http://localhost:5000/history (Statistics & trends)
-
-## 🧪 Test it
-
-1. **Single File Analysis**
-   - Upload `test-sample.eml` (included) or paste email content
-   - Get detailed analysis with threat score and recommendations
-
-2. **Batch Analysis**
-   - Select multiple `.eml` files (up to 10) or drag-and-drop them
-   - View batch processing progress and individual results
-   - Download combined analysis report
-   - Access detailed analysis for each file
-
-3. **Historical Dashboard** - Visit `/history` to see analysis trends and statistics
-
-4. **API Testing**:
-```bash
-# Single file analysis
-curl -X POST \
-  -F "file=@test-sample.eml" \
-  http://localhost:5000/api/analyze/file
-
-# Batch analysis
-curl -X POST \
-  -F "files[]=@test-sample.eml" \
-  -F "files[]=@test-phishing.eml" \
-  http://localhost:5000/api/analyze/batch
-
-# Content analysis
-curl -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"content":"From: suspicious@phishing.com\nSubject: URGENT Account Suspended"}' \
-  http://localhost:5000/api/analyze/content
-```
-
-## 🔌 API Endpoints
-
-### Analysis
-- `POST /api/analyze/content` - Analyze email text
-- `POST /api/analyze/file` - Upload single .eml file
-- `POST /api/analyze/batch` - Upload multiple .eml files (max 10)
-- `GET /api/analysis/{task_id}` - Get analysis results
-
-### Historical Data
-- `GET /api/history` - Get paginated analysis history (with filters)
-- `GET /api/statistics` - Get overall statistics summary
-- `GET /api/trends?days=30` - Get trend data for charts
-- `GET /api/export?format=csv` - Export data (CSV or JSON)
-- `GET /api/history/{task_id}` - Get detailed historical analysis
-
-### System
-- `GET /api/health` - Health check
-- `GET /api/test` - API status test
-
-## 🔧 VirusTotal Integration
-
-PhishGuard now includes real-time threat intelligence via VirusTotal API:
-
-### Setup:
-1. Get a free API key from [VirusTotal](https://www.virustotal.com/gui/join-us)
-2. Add to your `.env` file: `VIRUSTOTAL_API_KEY=your-api-key-here`
-3. Restart the application
-
-### Features:
-- **🔗 URL Analysis** - Checks all URLs found in emails against VirusTotal database
-- **📧 Sender Domain Analysis** - Validates sender domain reputation and history
-- **🌐 IP Address Scanning** - Analyzes IPs from email content AND routing headers
-- **📎 Attachment Hash Analysis** - SHA256 hash checking of all email attachments
-- **🛣️ Email Routing Analysis** - Checks reputation of servers that handled the email
-- **⚡ Real-time Results** - Shows malicious/suspicious indicators in analysis results
-- **🎯 Enhanced Scoring** - Comprehensive threat intelligence improves detection accuracy
-
-### Dashboard Display:
-- **🔴 Malicious Indicators** - Critical threats highlighted in red
-- **🟠 Suspicious Indicators** - Potential threats shown in orange
-- **📊 Detailed Scan Results** - Detection counts from multiple security engines
-- **📧 Sender Analysis** - Domain reputation and creation date
-- **📎 Attachment Reports** - File hash analysis and malware detection
-- **🌐 IP Geolocation** - Country and network owner information
-- **🛣️ Email Path Analysis** - Routing server reputation checks
-
-*Note: VirusTotal integration is optional. The system works without an API key but provides enhanced detection with it.*
+---
 
 ## 🛠️ Tech Stack
 
-- **Backend:** Flask + Celery + Redis + SQLAlchemy
-- **Frontend:** React + Material-UI + Recharts
-- **Database:** SQLite (configurable to PostgreSQL/MySQL)
-- **Analysis:** Pattern matching, domain checking, header validation, VirusTotal threat intelligence
-- **Charts:** Interactive data visualization with trend analysis
-- **Export:** CSV and JSON data export capabilities
+This project uses a **polyglot (multi-language) microservice architecture** to leverage the best technology for each task.
 
-## 🚀 Planned Features
+| Category | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Orchestration** | Docker, Docker Compose | To containerize and manage all microservices for isolation and reliability. |
+| **Backend API** | Python, Flask | The main REST API for handling file uploads and user requests. |
+| **Task Queue** | Celery, Redis | Manages asynchronous background tasks (like analysis) so the API stays fast. |
+| **Sandbox Service** | Node.js, Express | A dedicated microservice for securely running the browser. |
+| **Browser Automation**| Puppeteer | A Node.js library used to control the headless Google Chrome instance for sandboxing. |
+| **NLP** | TextBlob (Python) | Used for its pre-trained sentiment analysis model to score email subjectivity. |
+| **Frontend** | React.js, Material-UI | For building a clean, responsive user interface and dashboard. |
+| **Database** | MongoDB | A NoSQL database used to store the flexible, JSON-based analysis reports. |
+| **Threat Intel** | VirusTotal API | Provides external data on known malicious domains, IPs, and files. |
 
-- **Email Chain Analysis** - Analyze forwarding patterns and email threads
-- **Custom Rules Engine** - User-defined detection rules and scoring
-- **API Integration Suite** - REST API with webhook notifications
-- **Advanced Reporting** - PDF report generation and email alerts
-- **Machine Learning Enhancement** - ML models for pattern recognition
-- **Real-time Dashboard Updates** - WebSocket integration for live data
-- **Email Notifications** - Automated email alerts for analysis results, threat detections, and security findings
+---
 
 ## 🔧 Troubleshooting
 
+If you encounter issues, the first step is always to check the logs for each service.
+
 ```bash
-# Check logs
-docker-compose logs -f
+# See all running services
+docker-compose ps
 
-# Check specific service
-docker-compose logs backend
-docker-compose logs celery_worker
+# Follow the logs for the main backend
+docker logs -f clearsight_backend
 
-# Restart services
-docker-compose restart
+# Follow the logs for the analysis worker (where analysis happens)
+docker logs -f clearsight_worker
 
-# Clean rebuild (removes database)
-docker-compose down -v && docker-compose up --build
+# Follow the logs for the sandbox service
+docker logs -f clearsight_sandbox
 
-```
+# Stop all services
+docker-compose down
 
-## 📊 Database Schema
-
-The application automatically creates the following tables:
-- `analysis_results` - Stores detailed analysis results
-- `analysis_statistics` - Daily aggregated statistics for trends
-
-Data is automatically cleaned up (default: 90 days retention).
+# Nuke all data (database, uploads) and start fresh
+docker-compose down -v
