@@ -1,0 +1,14 @@
+From: test@example.com
+To: user@example.com
+Subject: Live Link Test
+Content-Type: text/html
+
+<html>
+<body>
+  <p>This is a test with real, active domains:</p>
+  <ul>
+    <li><a href="https://example.com">Safe Test Domain</a></li>
+    <li><a href="https://google.com">Google</a></li>
+  </ul>
+</body>
+</html>
